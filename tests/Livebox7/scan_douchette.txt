@@ -1,0 +1,3 @@
+Veuillez scanner le numéro de série et l'adresse MAC :
+IOH
+IOL

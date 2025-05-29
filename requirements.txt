@@ -1,0 +1,15 @@
+flask
+flask-login
+flask-sqlalchemy
+flask-bcrypt
+flask-wtf
+behave
+selenium
+pyautogui
+pdfkit
+python-dotenv
+pyvirtualdisplay
+psycopg2-binary
+requests==2.32.3
+webdriver-manager
+

@@ -1,0 +1,15 @@
+# Ignorer environnement virtuel
+.venv/
+
+# Fichiers temporaires
+*.pyc
+__pycache__/
+
+# Rapports générés
+static/rapports_html/
+static/rapports_pdf/
+
+# Fichiers de config sensibles (si besoin un jour)
+*.ini
+*.log
+.env

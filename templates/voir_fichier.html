@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Voir le fichier - {{ fichier.nom_fichier }}</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #ffffff;
+      margin-top: 50px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 900px;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    textarea {
+      width: 100%;
+      height: 400px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 14px;
+      background: #f9f9f9;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    button {
+      display: block;
+      margin: 20px auto 0;
+      padding: 12px 25px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .message {
+      text-align: center;
+      margin-bottom: 15px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>{{ fichier.nom_fichier }}</h1>
+    <form action="{{ url_for('fichierIni.update_fichier', id=fichier.id) }}" method="POST">
+      <textarea name="contenu_fichier" required>{{ contenu }}</textarea>
+      <button type="submit"> Enregistrer les modifications</button>
+    </form>
+  </div>
+</body>
+</html>

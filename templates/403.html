@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>403 - Accès refusé</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        img {
+            width: 130px;
+            height: auto;
+            margin-bottom: 20px;
+            opacity: 0.85;
+        }
+
+        h2 {
+            font-size: 25px;
+            color: #d9534f;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #555;
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
+
+        a.button {
+            text-decoration: none;
+            background-color: #048bfc;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        a.button:hover {
+            background-color: #3b539e;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="{{ url_for('static', filename='images/refusé.jpg') }}" alt="Accès refusé">
+    <h2>Accès refusé</h2>
+    <p>Désolé, vous n’avez pas les droits nécessaires pour accéder à cette page.</p>
+    <a href="{% if current_user.role == 'admin' %}/admin/dashboard{% else %}/dashboard_testeur{% endif %}" class="button">
+        Retour
+    </a>
+
+</body>
+</html>

@@ -1,0 +1,107 @@
+/* login.css */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #06b0e4, #0888f1, #05d4d5, #41acc2, #26a9b8);
+    background-size: 200% 200%;
+    animation: backgroundShift 10s ease infinite;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes backgroundShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.login-wrapper {
+    background-color: #ffffff;
+    padding: 35px 30px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 370px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.logo-container img {
+    width: 130px;
+    height: auto;
+}
+
+h4 {
+    font-family: 'serif';
+    text-align: center;
+    margin-bottom: 20px;
+    color: #06b0e4;
+    margin-top: -30px;
+    font-size : 23px;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px 14px;
+    margin: 10px 0 18px 0;
+    border: 1px solid #a6d9ef;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border 0.3s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: #04abea;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #06b0e4;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background-color: #0494f4;
+}
+
+.error {
+    color: red;
+    text-align: center;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+@media screen and (max-width: 480px) {
+    .login-wrapper {
+        padding: 30px 20px;
+    }
+
+    .logo-container img {
+        width: 90px;
+    }
+}

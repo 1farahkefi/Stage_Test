@@ -1,0 +1,35 @@
+
+services:
+  flask_app:
+    build: .
+    container_name: flask_app
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - selenium
+    environment:
+      - DISPLAY=:99
+    entrypoint: ["xvfb-run", "--auto-servernum", "--server-args='-screen 0 1024x768x24'", "python", "app.py"]
+    networks:
+      - app_network  # Réseau personnalisé
+
+  selenium:
+    image: selenium/standalone-chrome
+    container_name: selenium
+    ports:
+      - "4444:4444"
+    environment:
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_SESSION_TIMEOUT=60
+      - DISPLAY=:99
+    restart: always
+    networks:
+      - app_network  # Réseau personnalisé
+
+networks:
+  app_network:  # Réseau personnalisé
+    driver: bridge  # Utilisation du driver bridge par défaut

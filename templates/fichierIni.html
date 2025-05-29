@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Backoffice - Gestion des utilisateurs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/user_list_style.css')}}">
+
+</head>
+<body>
+  <div class="main-container">
+    <div class="sidebar">
+      <div>
+        <img src="{{ url_for('static', filename='images/logoSagem.png') }}" alt="Logo">
+         <a href="{% if current_user.role == 'admin' %}/admin/dashboard{% else %}/dashboard_testeur{% endif %}"  class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="/tester" class="nav-link"><i class="fas fa-cogs"></i> Test </a>
+        {% if current_user.role == 'admin' %}
+            <a href="/admin" class="nav-link"><i class="fas fa-users"></i> Utilisateurs</a>
+            <a href="/fichierIni" class="nav-link"><i class="fas fa-file"></i> Fichiers INI</a>
+        {% endif %}
+        <a href="/admin/reports" class="nav-link"><i class="fas fa-clipboard-list"></i>Rapports</a>
+        <a href="{% if current_user.role == 'admin' %}/chatAdmin{% else %}/chat{% endif %}" class="nav-link position-relative">
+          <i class="fas fa-comment"></i> Messages
+
+        </a>
+      </div>
+    </div>
+    <div class="right-panel">
+        <div class="navbar">
+    <div class="navbar-left">
+    </div>
+    <div class="navbar-tools">
+      <button id="darkToggle" title="Thème clair/sombre">
+        <i class="fas fa-moon"></i>
+      </button>
+      <a href="/logout"><img src="{{ url_for('static', filename='images/logout.png') }}" alt="Logout" height="32"></a>
+    </div>
+  </div>
+      <div class="header-section">
+        <h4><i class="fas fa-file-alt"></i> Liste des fichiers INI</h4>
+      </div>
+      <hr style="border: none; border-top: 1px solid #d3d3d3; margin: 30px 0;">
+      <div class="header-controls">
+        <input type="text" class="search-input" id="searchInput" placeholder=" Rechercher un utilisateur..." onkeyup="searchUser()">
+
+
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('fichierIni.ajouter_fichier') }}" style="margin-bottom: 30px;">
+          <input type="file" name="fichier_ini" required style="padding: 10px;">
+          <button type="submit" class="btn-add-rounded" style="margin-left: 10px;">
+            <i class="fas fa-upload"></i> Importer
+          </button>
+        </form>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Nom du fichier</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fichier in fichiers %}
+          <tr>
+            <td style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-cogs" style="color: #6c757d;"></i>
+              {{ fichier.nom_fichier }}
+            </td>
+            <td>
+              <form method="POST" action="{{ url_for('fichierIni.supprimer_fichier', id=fichier.id) }}" style="display:inline;">
+                <a href="{{ url_for('fichierIni.voir_fichier', id=fichier.id) }}" target="_blank">
+                  <i class="fas fa-eye"></i> Voir/modifier
+                </a>
+                <button type="submit" style="border: none; background: none; color: #d13030; cursor: pointer;">
+                  <i class="fas fa-trash"></i> Supprimer
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+    <script src="{{ url_for('static', filename='js/fichierIni.js') }}"></script>
+
+</body>
+</html>

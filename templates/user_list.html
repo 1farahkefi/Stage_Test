@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backoffice - Gestion des utilisateurs</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/user_list_style.css') }}">
+</head>
+<body>
+  <div class="main-container">
+    <div class="sidebar">
+      <div>
+        <img src="{{ url_for('static', filename='images/logoSagem.png') }}" alt="Logo">
+         <a href="{% if current_user.role == 'admin' %}/admin/dashboard{% else %}/dashboard_testeur{% endif %}"  class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="/tester" class="nav-link"><i class="fas fa-cogs"></i> Test </a>
+        {% if current_user.role == 'admin' %}
+            <a href="/admin" class="nav-link"><i class="fas fa-users"></i> Utilisateurs</a>
+            <a href="/fichierIni" class="nav-link"><i class="fas fa-file"></i> Fichiers INI</a>
+        {% endif %}
+        <a href="/admin/reports" class="nav-link"><i class="fas fa-clipboard-list"></i>Rapports</a>
+        <a href="{% if current_user.role == 'admin' %}/chatAdmin{% else %}/chat{% endif %}" class="nav-link position-relative">
+          <i class="fas fa-comment"></i> Messages
+
+        </a>
+      </div>
+    </div>
+    <div class="right-panel">
+        <div class="navbar">
+    <div class="navbar-left">
+
+    </div>
+    <div class="navbar-tools">
+      <button id="darkToggle" title="Thème clair/sombre">
+        <i class="fas fa-moon"></i>
+      </button>
+      <a href="/logout"><img src="{{ url_for('static', filename='images/logout.png') }}" alt="Logout" height="32"></a>
+    </div>
+  </div>
+      <div class="header-section">
+        <h4><i class="fas fa-users-cog"></i> Gestion des utilisateurs</h4>
+      </div>
+      <hr style="border: none; border-top: 1px solid #d3d3d3; margin: 30px 0;">
+
+      <div class="header-controls">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <input type="text" class="search-input" id="searchInput" placeholder="🔍 Rechercher un utilisateur..." onkeyup="searchUser()">
+          <i onclick="sortTable()" class="fas fa-sort" title="Trier" style="font-size: 20px; cursor: pointer; color: gray;"></i>
+        </div>
+        <a href="#" id="addUserBtn" class="btn-add-rounded">
+          <i class="fas fa-user-plus"></i>
+        </a>
+      </div>
+
+      <table id="userTable" data-sort="asc">
+  <thead>
+  <tr>
+    <th>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <span style="font-weight: bold;">Utilisateur</span>
+    <div style="display: flex; gap: 8px;">
+      <label style="font-size: 12px;">
+        <input type="radio" name="roleFilter" value="tous" onclick="filterByRole()" checked> Tous
+      </label>
+      <label style="font-size: 12px;">
+        <input type="radio" name="roleFilter" value="admin" onclick="filterByRole()"> Admin
+      </label>
+      <label style="font-size: 12px;">
+        <input type="radio" name="roleFilter" value="testeur" onclick="filterByRole()"> Testeur
+      </label>
+    </div>
+  </div>
+</th>
+    <th>Email</th>
+    <th>Matricule</th>
+    <th>Rôle</th>
+    <th>Actions</th>
+  </tr>
+</thead>
+
+  <tbody>
+    {% for user in users %}
+    <tr class="userRow" data-role="{{ user.role }}">
+      <!-- Utilisateur -->
+      <td class="svg_user">
+            <div class="user-avatar">{{ user.username|first|upper }}</div>
+              {{ user.username }}
+      </td>
+
+
+      <!-- Email -->
+      <td>{{ user.email }}</td>
+
+      <!-- Matricule -->
+      <td>{{ user.matricule }}</td>
+
+      <!-- Rôle -->
+      <td>
+        {% if user.role == 'admin' %}
+          <span class="badge-admin">Admin</span>
+        {% else %}
+          <span class="badge-testeur">Testeur</span>
+        {% endif %}
+      </td>
+
+      <!-- Actions -->
+      <td>
+        <a href="#" class="edit-btn"
+           data-id="{{ user.id }}"
+           data-username="{{ user.username }}"
+           data-email="{{ user.email }}"
+           data-matricule="{{ user.matricule }}"
+           data-role="{{ user.role }}">
+           <i class="fas fa-pen" style="color:#a3d1b6;"></i>
+        </a>
+        <a href="/admin/delete/{{ user.id }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+          <i class="fas fa-trash" style="color:#d13030;"></i>
+        </a>
+      </td>
+    </tr>
+
+    {% endfor %}
+  </tbody>
+</table>
+
+      <div class="arrow-buttons">
+        <div class="arrows-center">
+          <button onclick="removeRow()">⬅</button>
+          <span class="user-count"><i class="fas fa-user-friends"></i> Total : {{ users | length }}</span>
+          <button onclick="addRow()">➡</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="userModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2 id="modalTitle">Modifier un utilisateur</h2>
+    <form id="userForm" method="POST" action="">
+
+      <label for="modalUsername">Nom d'utilisateur</label>
+      <input type="text" name="username" id="modalUsername" required>
+
+      <label for="modalEmail">Email de l'utilisateur</label>
+      <input type="email" name="email" id="modalEmail" required>
+
+      <label for="modalMatricule">Matricule</label>
+      <input type="number" name="matricule" id="modalMatricule" required>
+
+      <label for="modalPassword">Mot de passe (laisser vide pour ne pas changer)</label>
+      <input type="password" name="password" id="modalPassword">
+
+      <label for="modalRole">Rôle</label>
+      <select name="role" id="modalRole" required>
+        <option value="admin">Admin</option>
+        <option value="testeur">Testeur</option>
+      </select>
+
+      <button type="submit">Enregistrer</button>
+    </form>
+  </div>
+</div>
+
+  <script src="{{ url_for('static', filename='js/user_list_scripts.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Accueil</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #06b0e4, #0888f1, #05d4d5, #41acc2, #26a9b8);
+            background-size: 200% 200%;
+            animation: backgroundShift 10s ease infinite;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes backgroundShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .navbar {
+            width: 100%;
+            height: 70px;
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 999;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-left img {
+            height: 100px;
+            margin-right: 5px;
+        }
+
+        .navbar-left span {
+            font-weight: 600;
+            font-size: 20px;
+            color: #048bfc;
+            font-family: 'serif';
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            background: none;
+            border: none;
+            color: #048bfc;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .logout-btn img {
+            width: 40px;
+            height: 30px;
+            transition: transform 0.2s ease;
+        }
+
+        .logout-btn:hover img {
+            transform: scale(1.2);
+        }
+
+
+        .logout-btn:hover svg {
+            transform: scale(1.2);
+        }
+
+        .content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+            gap: 40px;
+            padding: 40px 20px;
+            flex-grow: 1;
+        }
+
+       .model-card {
+            background-color: #f0f8ff;
+            padding: 8px 5px;
+            border-radius: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+
+        .model-card:hover {
+            transform: scale(1.07);
+        }
+
+        .model-card img {
+            width: 170px;
+            height: auto;
+        }
+
+        .model-card h3 {
+            color: black;
+            font-size: 18px;
+            font-family: 'serif';
+        }
+
+        .model-card button {
+            padding: 12px 26px;
+            background-color: #06b0e4;
+            color: white;
+            border: none;
+            font-size: 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .model-card button:hover {
+            background-color: #0494f4;
+        }
+
+        @media screen and (max-width: 480px) {
+            .content {
+                flex-direction: column;
+                padding: 30px 10px;
+            }
+
+            .model-card {
+                margin-bottom: 25px;
+            }
+
+            .navbar-left span {
+                font-size: 16px;
+            }
+        }
+            .page-subtitle {
+                text-align: center;
+                font-size: 18px; /* plus grand que par défaut */
+                font-family: serif;
+                color: black;
+                margin-top: -10px;
+                margin-bottom: 40px;
+            }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="navbar-left">
+             <img src="{{ url_for('static', filename='images/logo-Sag.png') }}" alt="Logo Sagem" style="height: 45px; margin-right:-8px">
+             <img src="{{ url_for('static', filename='images/Logo_Sagemcom_1.png') }}" alt="Logo Sagemcom">
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+             <a href="{% if current_user.role == 'admin' %}/admin/dashboard{% else %}/dashboard_testeur{% endif %}" class="logout-btn" title="Dashboard">
+                <i class="fas fa-chart-line"></i>
+            </a>
+            <a href="/logout" class="logout-btn" title="Se déconnecter">
+                <img src="{{ url_for('static', filename='images/logout.png') }}" alt="Logout">
+            </a>
+        </div>
+    </div>
+           <h1 class="page-title" style="text-align: center; color: black; font-family: serif; margin-top:80px; font-size:40px">AutoTestApp</h1>
+            <p class="page-subtitle">Sélectionnez un modèle pour lancer le processus de test automatisé</p>
+                 <hr style="border: none; border-top: 1px solid black; margin: -13px 125px;">
+    <div class="content">
+       <div class="model-card">
+            <img src="{{ url_for('static', filename='images/LIVEBOX7.png') }}" alt="Livebox 7">
+            <h3>Livebox 7/ W7</h3>
+            <form action="{{ url_for('launch.run_livebox7') }}" method="post">
+                <button type="submit" class="button">Lancer le test</button>
+            </form>
+        </div>
+        <div class="model-card">
+            <img src="{{ url_for('static', filename='images/Ederson.png') }}" alt="Ederson">
+            <h3>Ederson</h3>
+            <form action="{{ url_for('launch.run_ederson') }}" method="post">
+                <button type="submit" class="button">Lancer le test</button>
+            </form>
+        </div>
+    </div>
+
+
+
+</body>
+</html>
