@@ -27,33 +27,38 @@ pipeline {
         }
 
         stage('Run Flask App (background)') {
-    steps {
-        bat """
-            REM Démarrer Flask en tâche de fond avec les variables d'environnement set
-            start /min cmd /c "set FLASK_APP=app.py && set FLASK_ENV=development && %VENV%\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1"
-        """
-        bat 'ping 127.0.0.1 -n 5 > nul'
+            steps {
+                script {
+                    // Démarrer Flask en tâche de fond, rediriger la sortie dans un fichier log
+                    bat """
+                        start /min cmd /c "set FLASK_APP=%FLASK_APP% && set FLASK_ENV=%FLASK_ENV% && %VENV%\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1"
+                    """
 
-        script {
-            def serverStarted = false
-            for (int i = 0; i < 30; i++) {
-                def response = bat(script: """
-                    powershell -Command "try { (Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode } catch { Write-Output 'Error' }"
-                """, returnStdout: true).trim()
-                if (response == "200") {
-                    serverStarted = true
-                    break
+                    // Attendre un peu que le serveur démarre
+                    sleep time: 5, unit: 'SECONDS'
+
+                    // Vérifier que le serveur est accessible
+                    def serverStarted = false
+                    timeout(time: 60, unit: 'SECONDS') {
+                        waitUntil {
+                            def response = bat(
+                                script: """powershell -Command "try { (Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode } catch { Write-Output 'Error' }" """,
+                                returnStdout: true
+                            ).trim()
+                            if (response == "200") {
+                                serverStarted = true
+                                return true
+                            }
+                            sleep 2
+                            return false
+                        }
+                    }
+                    if (!serverStarted) {
+                        error("Le serveur Flask n'a pas démarré dans le temps imparti.")
+                    }
                 }
-                sleep 1
-            }
-            if (!serverStarted) {
-                error("Le serveur Flask n'a pas démarré dans le temps imparti.")
             }
         }
-    }
-}
-
-
 
         stage('Run Behave Tests') {
             steps {
@@ -66,7 +71,12 @@ pipeline {
 
         stage('Stop Flask Server') {
             steps {
-                bat 'taskkill /IM python.exe /F || echo "Aucun processus python à tuer."'
+                script {
+                    // Tuer le processus Flask lancé sur le port 5000 (ou le port défini)
+                    bat """
+                        for /f "tokens=5" %%a in ('netstat -aon ^| findstr :%FLASK_PORT% ^| findstr LISTENING') do taskkill /PID %%a /F
+                    """
+                }
             }
         }
     }
