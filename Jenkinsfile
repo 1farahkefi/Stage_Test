@@ -24,12 +24,12 @@ pipeline {
 
         stage('Check requirements.txt') {
             steps {
-                bat """
+                bat '''
                     if not exist requirements.txt (
                         echo requirements.txt introuvable !
                         exit 1
                     )
-                """
+                '''
             }
         }
 
@@ -43,53 +43,51 @@ pipeline {
             }
         }
 
-        stage('Run Flask App (background)') {
+        stage('Run Flask App and Behave Tests') {
             steps {
                 script {
-                    bat """
-                        start /min cmd /c "set FLASK_APP=%FLASK_APP% && set FLASK_ENV=%FLASK_ENV% && %VENV%\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1"
-                    """
+                    def flaskPID = null
+                    try {
+                        // Lancer Flask en tâche de fond et récupérer son PID
+                        bat """
+                            powershell -Command "
+                            Start-Process -FilePath '%VENV%\\\\Scripts\\\\python.exe' -ArgumentList '-m flask run --host=%FLASK_HOST% --port=%FLASK_PORT%' -PassThru | Select-Object -ExpandProperty Id > flask.pid
+                            "
+                        """
 
-                    sleep time: 5, unit: 'SECONDS'
+                        // Lire le PID dans une variable Groovy
+                        flaskPID = readFile('flask.pid').trim()
+                        echo "Flask PID = ${flaskPID}"
 
-                    def serverStarted = false
-                    timeout(time: 60, unit: 'SECONDS') {
-                        waitUntil {
-                            def response = bat(
-                                script: """powershell -Command "try { (Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode } catch { Write-Output 'Error' }" """,
-                                returnStdout: true
-                            ).trim()
-                            if (response == "200") {
-                                serverStarted = true
-                                return true
+                        // Attendre que Flask soit dispo (status 200)
+                        timeout(time: 60, unit: 'SECONDS') {
+                            waitUntil {
+                                def response = bat(
+                                    script: """powershell -Command "try { (Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode } catch { Write-Output 'Error' }" """,
+                                    returnStdout: true
+                                ).trim()
+                                echo "HTTP response: ${response}"
+                                return response == "200"
                             }
-                            sleep 2
-                            return false
+                        }
+
+                        echo "Serveur Flask démarré avec succès."
+
+                        // Lancer les tests behave
+                        bat """
+                            %VENV%\\Scripts\\python.exe -m behave bdd_tests/features/Ederson.feature > ederson.log
+                            %VENV%\\Scripts\\python.exe -m behave bdd_tests/features/Livebox7.feature > livebox7.log
+                            type ederson.log
+                            type livebox7.log
+                        """
+
+                    } finally {
+                        if (flaskPID) {
+                            echo "Arrêt du serveur Flask (PID=${flaskPID})"
+                            bat "taskkill /PID ${flaskPID} /F"
                         }
                     }
-                    if (!serverStarted) {
-                        error("Le serveur Flask n'a pas démarré dans le temps imparti.")
-                    }
                 }
-            }
-        }
-
-        stage('Run Behave Tests') {
-            steps {
-                bat """
-                    %VENV%\\Scripts\\python.exe -m behave bdd_tests/features/Ederson.feature > ederson.log
-                    %VENV%\\Scripts\\python.exe -m behave bdd_tests/features/Livebox7.feature > livebox7.log
-                    type ederson.log
-                    type livebox7.log
-                """
-            }
-        }
-
-        stage('Stop Flask Server') {
-            steps {
-                bat """
-                    for /f "tokens=5" %%a in ('netstat -aon ^| findstr :%FLASK_PORT% ^| findstr LISTENING') do taskkill /PID %%a /F
-                """
             }
         }
     }
