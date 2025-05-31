@@ -16,10 +16,10 @@ pipeline {
 
         stage('Setup Python Environment') {
             steps {
-                sh '''
-                python3 -m venv $VENV
-                source $VENV/bin/activate
-                pip install --upgrade pip
+                bat '''
+                python -m venv %VENV%
+                call %VENV%\\Scripts\\activate
+                python -m pip install --upgrade pip
                 pip install -r requirements.txt
                 '''
             }
@@ -27,28 +27,28 @@ pipeline {
 
         stage('Run Flask App (background)') {
             steps {
-                sh '''
-                source $VENV/bin/activate
-                nohup flask run --host=0.0.0.0 > flask_output.log 2>&1 &
-                sleep 5
+                bat '''
+                call %VENV%\\Scripts\\activate
+                start /b flask run --host=0.0.0.0 > flask_output.log 2>&1
+                timeout /t 5 > NUL
                 '''
             }
         }
 
         stage('Run Behave Tests') {
             steps {
-                sh '''
-                source $VENV/bin/activate
-                behave tests/Ederson || true
-                behave tests/Livebox7 || true
+                bat '''
+                call %VENV%\\Scripts\\activate
+                behave tests/Ederson || exit 0
+                behave tests/Livebox7 || exit 0
                 '''
             }
         }
 
         stage('Stop Flask Server') {
             steps {
-                sh '''
-                pkill -f "flask run"
+                bat '''
+                for /f "tokens=2 delims=," %%a in ('tasklist /FI "IMAGENAME eq python.exe" /FO CSV ^| findstr /I "flask"') do taskkill /PID %%a /F
                 '''
             }
         }
