@@ -89,12 +89,11 @@ pipeline {
         }
         stage('Analyse SonarQube') {
             steps {
-                 withSonarQubeEnv('SonarQube') { // Le nom doit correspondre à l'installation SonarQube configurée dans Jenkins
-                 bat 'sonar-scanner.bat'       // Sous Windows, on utilise souvent sonar-scanner.bat
+                withSonarQubeEnv('SonarQube') {
+                    bat 'sonar-scanner'
+                }
+            }
         }
-    }
-}
-
 
         stage("Vérifier la qualité (SonarQube)") {
             steps {
