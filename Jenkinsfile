@@ -8,6 +8,11 @@ pipeline {
         FLASK_HOST = "0.0.0.0"
         FLASK_PORT = "5000"
     }
+    stage('Clean Workspace') {
+    steps {
+        cleanWs()
+    }
+}
 
     stages {
         stage('Checkout') {
@@ -24,6 +29,15 @@ pipeline {
                     %VENV%\\Scripts\\python.exe -m pip install -r requirements.txt
                 """
             }
+        }
+        stage('Check requirements.txt') {
+             steps {
+                bat """
+                    if not exist requirements.txt (
+                    echo "requirements.txt introuvable !" && exit 1
+                )
+                """
+             }
         }
 
         stage('Run Flask App (background)') {
@@ -63,11 +77,12 @@ pipeline {
         stage('Run Behave Tests') {
             steps {
                 bat """
-                    %VENV%\\Scripts\\python.exe -m behave tests/Ederson
-                    %VENV%\\Scripts\\python.exe -m behave tests/Livebox7
+                    %VENV%\\Scripts\\python.exe -m behave bdd_tests/features/Ederson.feature
+                    %VENV%\\Scripts\\python.exe -m behave bdd_tests/features/Livebox7.feature
                 """
             }
         }
+
 
         stage('Stop Flask Server') {
             steps {
