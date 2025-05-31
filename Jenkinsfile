@@ -10,7 +10,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/1farahkefi/Stage_Test.git' , tool: 'Default'
+                // Remplace 'git-default' par le nom exact configuré dans Jenkins, ou enlève tool si pas configuré
+                git branch: 'main', url: 'https://github.com/1farahkefi/Stage_Test.git' //, tool: 'git-default'
             }
         }
 
@@ -47,9 +48,9 @@ pipeline {
 
         stage('Stop Flask Server') {
             steps {
-                // Tue le processus Python lié au serveur Flask (si nécessaire, remplace par une méthode plus robuste si ça échoue)
+                // Ici, méthode plus simple, à adapter selon ta config
                 bat """
-                    for /f "tokens=2 delims=," %%a in ('tasklist /FI "IMAGENAME eq python.exe" /FO CSV ^| findstr /I "flask"') do taskkill /PID %%a /F
+                    taskkill /IM python.exe /F
                 """
             }
         }
