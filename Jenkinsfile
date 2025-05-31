@@ -79,9 +79,5 @@ stage('Tester si Flask répond') {
     }
 }
 
-    post {
-        always {
-            echo 'Pipeline terminé.'
-        }
-    }
+
 }}
