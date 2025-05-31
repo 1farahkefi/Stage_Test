@@ -5,8 +5,7 @@ pipeline {
     VENV = '.venv'
     PYTHON = '.venv\\Scripts\\python.exe'
     PIP = '.venv\\Scripts\\pip.exe'
-    DATABASE_URL = 'postgresql+psycopg2://postgres:ton_mot_de_passe@host:port/base'
-    SECRET_KEY = 'une_clef_secrete_pour_flask'
+    DATABASE_URL = 'postgresql+psycopg2://postgres.ckbimfasdfzgiduhonty:SagemCom01%@aws-0-eu-central-1.pooler.supabase.com:6543/postgres'
 }
 
 
