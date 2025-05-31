@@ -26,7 +26,7 @@ pipeline {
                 bat '.venv\\Scripts\\pip.exe install -r requirements.txt'
             }
         }
-        stages {
+
         stage('Build Docker image for Flask app') {
             steps {
                 script {
@@ -112,4 +112,4 @@ pipeline {
             echo 'Pipeline terminé.'
         }
     }
-}}
+}
