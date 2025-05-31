@@ -43,10 +43,14 @@ pipeline {
                     bat '''
                     docker network create test_network || true
 
-                    docker run -d --name selenium --network test_network selenium/standalone-chrome
+                     # Supprimer les conteneurs s'ils existent
+                        docker rm -f selenium || true
+                        docker rm -f flask_app || true
 
-                    docker run -d --name flask_app --network test_network -p 5000:5000 flask_app_image
-                    '''
+                     # Lancer les conteneurs
+                        docker run -d --name selenium --network test_network selenium/standalone-chrome
+                        docker run -d --name flask_app --network test_network -p 5000:5000 flask_app_image
+            '''
                 }
             }
         }
