@@ -27,32 +27,32 @@ pipeline {
         }
 
         stage('Run Flask App (background)') {
-            steps {
-                bat """
-                    REM Démarrer Flask en tâche de fond avec redirection des logs
-                    start /min cmd /c "%VENV%\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1"
-                """
-                // Attendre un peu pour que le serveur ait le temps de démarrer
-                bat 'ping 127.0.0.1 -n 5 > nul'
+    steps {
+        bat """
+            REM Démarrer Flask en tâche de fond avec les variables d'environnement set
+            start /min cmd /c "set FLASK_APP=app.py && set FLASK_ENV=development && %VENV%\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1"
+        """
+        bat 'ping 127.0.0.1 -n 5 > nul'
 
-                script {
-                    def serverStarted = false
-                    for (int i = 0; i < 30; i++) {
-                        def response = bat(script: """
-                            powershell -Command "try { (Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode } catch { Write-Output 'Error' }"
-                        """, returnStdout: true).trim()
-                        if (response == "200") {
-                            serverStarted = true
-                            break
-                        }
-                        sleep 1
-                    }
-                    if (!serverStarted) {
-                        error("Le serveur Flask n'a pas démarré dans le temps imparti.")
-                    }
+        script {
+            def serverStarted = false
+            for (int i = 0; i < 30; i++) {
+                def response = bat(script: """
+                    powershell -Command "try { (Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode } catch { Write-Output 'Error' }"
+                """, returnStdout: true).trim()
+                if (response == "200") {
+                    serverStarted = true
+                    break
                 }
+                sleep 1
+            }
+            if (!serverStarted) {
+                error("Le serveur Flask n'a pas démarré dans le temps imparti.")
             }
         }
+    }
+}
+
 
 
         stage('Run Behave Tests') {
