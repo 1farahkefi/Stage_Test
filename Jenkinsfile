@@ -29,13 +29,12 @@ pipeline {
         }
 
        stage('Lancer Flask') {
-    steps {
-        bat '''
-            start /MIN "" .venv\\Scripts\\python.exe app.py
-            timeout /t 5 > nul
-        '''
-    }
-}
+            steps {
+                bat 'start /MIN "" .venv\\Scripts\\python.exe app.py'
+                bat 'timeout /t 5'
+            }
+        }
+
 
 stage('Tester si Flask répond') {
     steps {
