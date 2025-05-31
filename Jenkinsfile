@@ -42,6 +42,12 @@ pipeline {
                 """
             }
         }
+        stage('Install requirements') {
+            steps {
+                bat '.venv\\Scripts\\pip install -r requirements.txt'
+                echo '✅ Toutes les dépendances ont été installées.'
+    }
+}
 
         stage('Run Flask App and Behave Tests') {
             steps {
