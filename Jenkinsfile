@@ -9,10 +9,11 @@ pipeline {
 
     stages {
         stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Preparation') {
             steps {
                 bat 'python -m venv .venv'
@@ -21,15 +22,14 @@ pipeline {
 
         stage('Install requirements') {
             steps {
-                bat '.venv\\Scripts\\pip install -r requirements.txt'
+                bat '.venv\\Scripts\\pip.exe install -r requirements.txt'
             }
         }
 
         stage('Lancer Flask') {
             steps {
-                // Lance Flask en tâche de fond, mais ici on utilise "start" Windows pour lancer python app.py
                 bat '''
-                    start /B "" .venv\\Scripts\\python.exe app.py
+                    start /MIN "" .venv\\Scripts\\python.exe app.py
                     timeout /t 5 > nul
                 '''
             }
@@ -38,6 +38,7 @@ pipeline {
         stage('Tester si Flask répond') {
             steps {
                 bat '''
+                    @echo off
                     setlocal enabledelayedexpansion
                     set success=0
                     for /L %%i in (1,1,10) do (
@@ -45,7 +46,7 @@ pipeline {
                         findstr /C:"200" response.txt > nul
                         if !errorlevel! == 0 (
                             set success=1
-                            goto :done
+                            goto done
                         )
                         timeout /t 1 > nul
                     )
@@ -55,13 +56,14 @@ pipeline {
                         type response.txt
                         exit /b 1
                     )
+                    exit /b 0
                 '''
             }
         }
 
         stage('Lancer tests Behave') {
             steps {
-                bat '.venv\\Scripts\\behave'
+                bat '.venv\\Scripts\\python.exe -m behave'
             }
         }
     }
