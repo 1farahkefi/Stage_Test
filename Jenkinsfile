@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
+        VENV = '.venv'
         FLASK_APP = 'app.py'  // ou le nom de ton fichier Flask
         FLASK_ENV = 'development'
-        # Si tu utilises un venv, active-le ici ou adapte la commande python
     }
 
     stages {
