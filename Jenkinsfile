@@ -15,6 +15,11 @@ pipeline {
 }
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/1farahkefi/Stage_Test.git'
