@@ -28,26 +28,22 @@ pipeline {
 
         stage('Run Flask App (background)') {
             steps {
+                bat """
+                    start /min cmd /c ".venv\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1"
+                    timeout /t 3 > nul
+                """
                 script {
-                    bat """
-                        REM Lancer Flask en arrière-plan et récupérer le PID
-                        start /b %VENV%\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1
-                        timeout /t 3 > nul
-                    """
-
-                    // Attente active du démarrage du serveur Flask (max 30s)
                     def serverStarted = false
                     for (int i = 0; i < 30; i++) {
-                        def response = bat(returnStatus: true, script: """
-                            powershell -Command "(Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode"
-                        """)
-                        if (response == 200) {
+                        def response = bat(script: """
+                            powershell -Command "try { (Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode } catch { Write-Output 'Error' }"
+                        """, returnStdout: true).trim()
+                        if (response == "200") {
                             serverStarted = true
                             break
                         }
                         sleep 1
                     }
-
                     if (!serverStarted) {
                         error("Le serveur Flask n'a pas démarré dans le temps imparti.")
                     }
@@ -66,7 +62,6 @@ pipeline {
 
         stage('Stop Flask Server') {
             steps {
-                // On kill python.exe : attention à n'avoir que ce serveur Python en cours !
                 bat 'taskkill /IM python.exe /F || echo "Aucun processus python à tuer."'
             }
         }
