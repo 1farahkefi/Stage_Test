@@ -62,7 +62,8 @@ pipeline {
 
         stage('Lancer tests Behave') {
             steps {
-                bat '.venv\\Scripts\\python.exe -m behave'
+                bat '.venv\\Scripts\\python.exe -m behave tests/Livebox7/features'
+                bat '.venv\\Scripts\\python.exe -m behave tests/Ederson/features'
             }
         }
 
