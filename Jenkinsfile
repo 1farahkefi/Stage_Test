@@ -26,6 +26,30 @@ pipeline {
                 bat '.venv\\Scripts\\pip.exe install -r requirements.txt'
             }
         }
+        stages {
+        stage('Build Docker image for Flask app') {
+            steps {
+                script {
+                    // Construire l'image Flask app (à partir de ton Dockerfile)
+                    bat 'docker build -t flask_app_image .'
+                }
+            }
+        }
+
+        stage('Start Selenium and Flask containers') {
+            steps {
+                script {
+                    // Lancer Selenium (ex: selenium/standalone-chrome) et Flask app
+                    bat '''
+                    docker network create test_network || true
+
+                    docker run -d --name selenium --network test_network selenium/standalone-chrome
+
+                    docker run -d --name flask_app --network test_network -p 5000:5000 flask_app_image
+                    '''
+                }
+            }
+        }
 
         stage('Lancer Flask') {
             steps {
@@ -88,4 +112,4 @@ pipeline {
             echo 'Pipeline terminé.'
         }
     }
-}
+}}
