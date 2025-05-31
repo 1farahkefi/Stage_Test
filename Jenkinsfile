@@ -8,7 +8,7 @@ pipeline {
     }
 
     stages {
-        stage('Préparation') {
+        stage('Preparation') {
             steps {
                 bat 'python -m venv .venv'
             }
@@ -22,27 +22,34 @@ pipeline {
 
         stage('Lancer Flask') {
             steps {
+                // Lance Flask en tâche de fond, mais ici on utilise "start" Windows pour lancer python app.py
                 bat '''
-                    set FLASK_APP=app.py
-                    set FLASK_ENV=development
-                    start /B .venv\\Scripts\\python.exe -m flask run --host=127.0.0.1 --port=5000
+                    start /B "" .venv\\Scripts\\python.exe app.py
+                    timeout /t 5 > nul
                 '''
-                // attendre 5 secondes
-                bat 'timeout /t 5 > nul'
             }
         }
 
         stage('Tester si Flask répond') {
             steps {
                 bat '''
+                    setlocal enabledelayedexpansion
+                    set success=0
                     for /L %%i in (1,1,10) do (
                         powershell -Command "try { (Invoke-WebRequest -Uri http://127.0.0.1:5000 -UseBasicParsing).StatusCode } catch { 'Error' }" > response.txt
-                        findstr /C:"200" response.txt && exit /b 0
+                        findstr /C:"200" response.txt > nul
+                        if !errorlevel! == 0 (
+                            set success=1
+                            goto :done
+                        )
                         timeout /t 1 > nul
                     )
-                    echo Flask n'a pas répondu à temps.
-                    type response.txt
-                    exit /b 1
+                    :done
+                    if %success%==0 (
+                        echo Flask n'a pas répondu à temps.
+                        type response.txt
+                        exit /b 1
+                    )
                 '''
             }
         }
