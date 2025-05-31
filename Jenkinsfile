@@ -8,6 +8,11 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
         stage('Preparation') {
             steps {
                 bat 'python -m venv .venv'
