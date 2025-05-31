@@ -29,10 +29,12 @@ pipeline {
         stage('Run Flask App (background)') {
             steps {
                 bat """
-                    start /min cmd /c ".venv\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1"
+                    REM Démarrer Flask en tâche de fond avec redirection des logs
+                    start /min cmd /c "%VENV%\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1"
                 """
-                // Pause environ 3 secondes sans redirection problématique
-                bat 'ping 127.0.0.1 -n 4 > nul'
+                // Attendre un peu pour que le serveur ait le temps de démarrer
+                bat 'ping 127.0.0.1 -n 5 > nul'
+
                 script {
                     def serverStarted = false
                     for (int i = 0; i < 30; i++) {
@@ -51,6 +53,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Run Behave Tests') {
             steps {
