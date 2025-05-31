@@ -2,7 +2,10 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_FILE = 'docker-compose.yml'
+        VENV = '.venv'
+        PYTHON = '.venv\\Scripts\\python.exe'
+        PIP = '.venv\\Scripts\\pip.exe'
+        DATABASE_URL = 'postgresql+psycopg2://postgres.ckbimfasdfzgiduhonty:SagemCom01%@aws-0-eu-central-1.pooler.supabase.com:6543/postgres'
     }
 
     stages {
@@ -12,36 +15,70 @@ pipeline {
             }
         }
 
-        stage('Démarrer les services Docker Compose') {
+        stage('Preparation') {
             steps {
-                bat 'docker-compose up -d'
-                // Attendre quelques secondes que Flask démarre correctement
-                sleep(time: 10, unit: 'SECONDS')
+                bat 'python -m venv .venv'
+            }
+        }
+
+        stage('Install requirements') {
+            steps {
+                bat '.venv\\Scripts\\pip.exe install -r requirements.txt'
+            }
+        }
+
+        stage('Lancer Flask') {
+            steps {
+                bat 'start /MIN "" .venv\\Scripts\\python.exe app.py'
+                bat 'powershell -Command "Start-Sleep -Seconds 5"'
             }
         }
 
         stage('Tester si Flask répond') {
             steps {
                 bat '''
-                    status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000)
-                    if [ "$status" -ne 200 ]; then
-                        echo "Erreur : Flask ne répond pas (status=$status)"
-                        exit 1
-                    fi
+                    @echo off
+                    setlocal enabledelayedexpansion
+                    set success=0
+                    for /L %%i in (1,1,10) do (
+                        powershell -Command "try { (Invoke-WebRequest -Uri http://127.0.0.1:5000 -UseBasicParsing).StatusCode } catch { 'Error' }" > response.txt
+                        findstr /C:"200" response.txt > nul
+                        if !errorlevel! == 0 (
+                            set success=1
+                            goto done
+                        )
+                        powershell -Command "Start-Sleep -Seconds 1"
+                    )
+                    :done
+                    if %success%==0 (
+                        echo Flask n'a pas répondu à temps.
+                        type response.txt
+                        exit /b 1
+                    )
+                    exit /b 0
                 '''
             }
         }
-
-        stage('Lancer tests Behave') {
+        stage('Lancer tests Behave Ederson ') {
             steps {
-                // Exécuter les tests Behave à l'intérieur du conteneur Flask
-                bat 'docker exec flask_app python -m behave tests'
+                bat '.venv\\Scripts\\python.exe -m behave tests/Ederson/features'
+
+            }
+        }
+        stage('Lancer tests Behave livebox7 ') {
+            steps {
+                bat '.venv\\Scripts\\python.exe -m behave tests/Livebox7/features'
+
             }
         }
 
-        stage('Arrêter les services') {
+
+        stage('Arrêter Flask') {
             steps {
-                bat 'docker-compose down'
+                bat '''
+                    REM Kill Flask (python.exe) sur le port 5000
+                    for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":5000" ^| findstr LISTENING') do taskkill /PID %%a /F
+                '''
             }
         }
     }
