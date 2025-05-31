@@ -2,9 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'flask_app_test'
-        CONTAINER_NAME = 'flask_test_container'
-        DATABASE_URL = 'postgresql+psycopg2://postgres.ckbimfasdfzgiduhonty:SagemCom01%@aws-0-eu-central-1.pooler.supabase.com:6543/postgres'
+        COMPOSE_FILE = 'docker-compose.yml'
     }
 
     stages {
@@ -14,56 +12,36 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Démarrer les services Docker Compose') {
             steps {
-                script {
-                    docker.build("${IMAGE_NAME}")
-                }
-            }
-        }
-
-        stage('Run Flask Container') {
-            steps {
-                sh "docker run -d -p 5000:5000 --name ${CONTAINER_NAME} ${IMAGE_NAME}"
-                sh "sleep 5"
+                sh 'docker-compose up -d'
+                // Attendre quelques secondes que Flask démarre correctement
+                sleep(time: 10, unit: 'SECONDS')
             }
         }
 
         stage('Tester si Flask répond') {
             steps {
                 sh '''
-                    success=0
-                    for i in {1..10}; do
-                        status=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000)
-                        if [ "$status" -eq 200 ]; then
-                            success=1
-                            break
-                        fi
-                        sleep 1
-                    done
-                    if [ "$success" -ne 1 ]; then
-                        echo "Flask ne répond pas"
+                    status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000)
+                    if [ "$status" -ne 200 ]; then
+                        echo "Erreur : Flask ne répond pas (status=$status)"
                         exit 1
                     fi
                 '''
             }
         }
 
-        stage('Lancer tests Behave Ederson') {
+        stage('Lancer tests Behave') {
             steps {
-                sh "docker exec ${CONTAINER_NAME} python -m behave tests/Ederson/features"
+                // Exécuter les tests Behave à l'intérieur du conteneur Flask
+                sh 'docker exec flask_app python -m behave tests'
             }
         }
 
-        stage('Lancer tests Behave Livebox7') {
+        stage('Arrêter les services') {
             steps {
-                sh "docker exec ${CONTAINER_NAME} python -m behave tests/Livebox7/features"
-            }
-        }
-
-        stage('Arrêter et Supprimer le conteneur') {
-            steps {
-                sh "docker stop ${CONTAINER_NAME} && docker rm ${CONTAINER_NAME}"
+                sh 'docker-compose down'
             }
         }
     }
