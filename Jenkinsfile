@@ -31,8 +31,7 @@ pipeline {
                 bat """
                     start /min cmd /c ".venv\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1"
                 """
-                // Timeout séparé en une étape 'bat' distincte pour éviter la redirection d'entrée
-                bat 'timeout /t 3 > nul'
+
                 script {
                     def serverStarted = false
                     for (int i = 0; i < 30; i++) {
