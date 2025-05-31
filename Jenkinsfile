@@ -5,13 +5,14 @@ pipeline {
         VENV = ".venv"
         FLASK_APP = "app.py"
         FLASK_ENV = "development"
+        FLASK_HOST = "0.0.0.0"
+        FLASK_PORT = "5000"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Remplace 'git-default' par le nom exact configuré dans Jenkins, ou enlève tool si pas configuré
-                git branch: 'main', url: 'https://github.com/1farahkefi/Stage_Test.git' //, tool: 'git-default'
+                git branch: 'main', url: 'https://github.com/1farahkefi/Stage_Test.git'
             }
         }
 
@@ -19,39 +20,54 @@ pipeline {
             steps {
                 bat """
                     python -m venv %VENV%
-                    call %VENV%\\Scripts\\activate
-                    python -m pip install --upgrade pip
-                    pip install -r requirements.txt
+                    %VENV%\\Scripts\\python.exe -m pip install --upgrade pip
+                    %VENV%\\Scripts\\python.exe -m pip install -r requirements.txt
                 """
             }
         }
 
         stage('Run Flask App (background)') {
             steps {
-                bat """
-                    call %VENV%\\Scripts\\activate
-                    start /b flask run --host=0.0.0.0 --port=5000 > flask_output.log 2>&1
-                    timeout /t 5 > NUL
-                """
+                script {
+                    bat """
+                        REM Lancer Flask en arrière-plan et récupérer le PID
+                        start /b %VENV%\\Scripts\\python.exe -m flask run --host=%FLASK_HOST% --port=%FLASK_PORT% > flask_output.log 2>&1
+                        timeout /t 3 > nul
+                    """
+
+                    // Attente active du démarrage du serveur Flask (max 30s)
+                    def serverStarted = false
+                    for (int i = 0; i < 30; i++) {
+                        def response = bat(returnStatus: true, script: """
+                            powershell -Command "(Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode"
+                        """)
+                        if (response == 200) {
+                            serverStarted = true
+                            break
+                        }
+                        sleep 1
+                    }
+
+                    if (!serverStarted) {
+                        error("Le serveur Flask n'a pas démarré dans le temps imparti.")
+                    }
+                }
             }
         }
 
         stage('Run Behave Tests') {
             steps {
                 bat """
-                    call %VENV%\\Scripts\\activate
-                    behave tests/Ederson || exit /b 0
-                    behave tests/Livebox7 || exit /b 0
+                    %VENV%\\Scripts\\python.exe -m behave tests/Ederson
+                    %VENV%\\Scripts\\python.exe -m behave tests/Livebox7
                 """
             }
         }
 
         stage('Stop Flask Server') {
             steps {
-                // Ici, méthode plus simple, à adapter selon ta config
-                bat """
-                    taskkill /IM python.exe /F
-                """
+                // On kill python.exe : attention à n'avoir que ce serveur Python en cours !
+                bat 'taskkill /IM python.exe /F || echo "Aucun processus python à tuer."'
             }
         }
     }
