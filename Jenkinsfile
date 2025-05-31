@@ -5,7 +5,7 @@ pipeline {
         VENV = ".venv"
         FLASK_APP = "app.py"
         FLASK_ENV = "development"
-        FLASK_HOST = "127.0.0.1"
+        FLASK_HOST = "0.0.0.0"
         FLASK_PORT = "5000"
     }
 
@@ -27,7 +27,7 @@ pipeline {
                 bat '''
                     if not exist requirements.txt (
                         echo requirements.txt introuvable !
-                        exit 1
+                        exit /b 1
                     )
                 '''
             }
@@ -48,21 +48,20 @@ pipeline {
                 script {
                     def flaskPID = null
                     try {
-                        // Lancer Flask avec redirection du PID vers fichier en ASCII
+                        // Lancer Flask en tâche de fond avec PowerShell et récupérer le PID
                         bat """
-                            chcp 65001
-                            powershell -Command "$env:FLASK_APP='${env.FLASK_APP}'; $env:FLASK_ENV='${env.FLASK_ENV}'; $env:FLASK_RUN_PORT='${env.FLASK_PORT}'; $env:FLASK_RUN_HOST='${env.FLASK_HOST}'; Start-Process '${env.VENV}\\\\Scripts\\\\flask.exe' -NoNewWindow -RedirectStandardOutput 'flask_output.log' -PassThru | ForEach-Object { $_.Id } > flask.pid"
+                            powershell.exe -NoProfile -Command "Start-Process -FilePath '%VENV%\\\\Scripts\\\\python.exe' -ArgumentList '-m flask run --host=%FLASK_HOST% --port=%FLASK_PORT%' -PassThru | Select-Object -ExpandProperty Id > flask.pid"
                         """
 
-                        // Lire le PID proprement
+                        // Lire le PID dans une variable Groovy
                         flaskPID = readFile('flask.pid').trim()
                         echo "Flask PID = ${flaskPID}"
 
-                        // Attendre que le serveur Flask réponde
+                        // Attendre que Flask soit dispo (HTTP 200)
                         timeout(time: 60, unit: 'SECONDS') {
                             waitUntil {
                                 def response = bat(
-                                    script: """powershell -Command "try { (Invoke-WebRequest -Uri http://localhost:${env.FLASK_PORT} -UseBasicParsing).StatusCode } catch { 'Error' }" """,
+                                    script: """powershell.exe -NoProfile -Command "try { (Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode } catch { Write-Output 'Error' }" """,
                                     returnStdout: true
                                 ).trim()
                                 echo "HTTP response: ${response}"
@@ -72,20 +71,18 @@ pipeline {
 
                         echo "Serveur Flask démarré avec succès."
 
-                        // Exécuter les tests Behave
+                        // Lancer les tests behave
                         bat """
-                            ${env.VENV}\\Scripts\\python.exe -m behave bdd_tests/features/Ederson.feature > ederson.log
-                            ${env.VENV}\\Scripts\\python.exe -m behave bdd_tests/features/Livebox7.feature > livebox7.log
+                            %VENV%\\Scripts\\python.exe -m behave bdd_tests/features/Ederson.feature > ederson.log
+                            %VENV%\\Scripts\\python.exe -m behave bdd_tests/features/Livebox7.feature > livebox7.log
                             type ederson.log
                             type livebox7.log
                         """
 
                     } finally {
-                        if (flaskPID?.isInteger()) {
+                        if (flaskPID) {
                             echo "Arrêt du serveur Flask (PID=${flaskPID})"
-                            bat "taskkill /F /PID ${flaskPID}"
-                        } else {
-                            echo "PID Flask invalide ou introuvable : ${flaskPID}"
+                            bat "taskkill /PID ${flaskPID} /F"
                         }
                     }
                 }
