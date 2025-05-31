@@ -27,7 +27,7 @@ pipeline {
                 bat '''
                     if not exist requirements.txt (
                         echo requirements.txt introuvable !
-                        exit 1
+                        exit /b 1
                     )
                 '''
             }
@@ -48,22 +48,20 @@ pipeline {
                 script {
                     def flaskPID = null
                     try {
-                        // Lancer Flask en tâche de fond et récupérer son PID
+                        // Lancer Flask en tâche de fond avec PowerShell et récupérer le PID
                         bat """
-                            powershell -Command "
-                            Start-Process -FilePath '%VENV%\\\\Scripts\\\\python.exe' -ArgumentList '-m flask run --host=%FLASK_HOST% --port=%FLASK_PORT%' -PassThru | Select-Object -ExpandProperty Id > flask.pid
-                            "
+                            powershell.exe -NoProfile -Command "Start-Process -FilePath '%VENV%\\\\Scripts\\\\python.exe' -ArgumentList '-m flask run --host=%FLASK_HOST% --port=%FLASK_PORT%' -PassThru | Select-Object -ExpandProperty Id > flask.pid"
                         """
 
                         // Lire le PID dans une variable Groovy
                         flaskPID = readFile('flask.pid').trim()
                         echo "Flask PID = ${flaskPID}"
 
-                        // Attendre que Flask soit dispo (status 200)
+                        // Attendre que Flask soit dispo (HTTP 200)
                         timeout(time: 60, unit: 'SECONDS') {
                             waitUntil {
                                 def response = bat(
-                                    script: """powershell -Command "try { (Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode } catch { Write-Output 'Error' }" """,
+                                    script: """powershell.exe -NoProfile -Command "try { (Invoke-WebRequest -Uri http://localhost:%FLASK_PORT% -UseBasicParsing).StatusCode } catch { Write-Output 'Error' }" """,
                                     returnStdout: true
                                 ).trim()
                                 echo "HTTP response: ${response}"
