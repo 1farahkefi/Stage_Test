@@ -2,10 +2,13 @@ pipeline {
     agent any
 
     environment {
-        VENV = '.venv'
-        PYTHON = '.venv\\Scripts\\python.exe'
-        PIP = '.venv\\Scripts\\pip.exe'
-    }
+    VENV = '.venv'
+    PYTHON = '.venv\\Scripts\\python.exe'
+    PIP = '.venv\\Scripts\\pip.exe'
+    DATABASE_URL = 'postgresql+psycopg2://postgres:ton_mot_de_passe@host:port/base'
+    SECRET_KEY = 'une_clef_secrete_pour_flask'
+}
+
 
     stages {
         stage('Checkout') {
