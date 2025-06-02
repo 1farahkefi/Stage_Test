@@ -89,7 +89,7 @@ pipeline {
         }
         stage('Analyse SonarQube') {
             steps {
-                withSonarQubeEnv('sonar-scanner') {
+                withSonarQubeEnv('MySonar') {
                     bat 'sonar-scanner'
                 }
             }
