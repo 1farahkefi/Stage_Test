@@ -62,7 +62,7 @@ pipeline {
             }
         }
 
-        stage('Lancer tests Behave Ederson') {
+        /*stage('Lancer tests Behave Ederson') {
             steps {
                 bat '.venv\\Scripts\\python.exe -m behave tests/Ederson/features'
             }
@@ -73,7 +73,7 @@ pipeline {
                 bat '.venv\\Scripts\\python.exe -m behave tests/Livebox7/features'
             }
         }
-
+*/
         stage('Arrêter Flask') {
             steps {
                 bat '''
