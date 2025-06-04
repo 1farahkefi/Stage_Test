@@ -57,7 +57,7 @@ pipeline {
 stage('SonarQube analysis') {
             steps {
                 // Utilise la config SonarQube installée et le token associé
-                withSonarQubeEnv('sonar_token') {
+                withSonarQubeEnv('MySonar') {
                     // Exécute le scanner depuis l'outil installé automatiquement
                     sh 'sonar-scanner -Dsonar.projectKey=1farahkefi_Stage_Test -Dsonar.sources=.'
                 }
