@@ -33,7 +33,8 @@ pipeline {
                 bat 'powershell -Command "Start-Sleep -Seconds 5"'
             }
         }
-/*
+
+        /*
         stage('Build Docker image for Flask app') {
             steps {
                 bat 'docker build -t flask_app_image .'
@@ -53,22 +54,13 @@ pipeline {
                 '''
             }
         }
-*/
-stage('SonarQube analysis') {
+        */
+
+        stage('SonarQube analysis') {
             steps {
-                // Utilise la config SonarQube installée et le token associé
+                // SonarCloud Automatic Analysis est activé, donc ne pas lancer manuellement
                 withSonarQubeEnv('MySonar') {
-                    // Exécute le scanner depuis l'outil installé automatiquement
-                    bat 'sonar-scanner'
-                }
-            }
-        }
-
-
-        stage("Vérifier la qualité (SonarQube)") {
-            steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                    // bat 'sonar-scanner' // <-- Ligne commentée pour éviter conflit avec automatic analysis
                 }
             }
         }
