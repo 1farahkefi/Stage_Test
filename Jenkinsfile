@@ -66,6 +66,7 @@ pipeline {
                 -Dsonar.sources=. ^
                 -Dsonar.host.url=https://sonarcloud.io ^
                 -Dsonar.python.version=3.10 ^
+                Dsonar.login=%SONAR_TOKEN%
 
             '''
                 }
