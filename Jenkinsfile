@@ -6,7 +6,6 @@ pipeline {
         PYTHON = '.venv\\Scripts\\python.exe'
         PIP = '.venv\\Scripts\\pip.exe'
         DATABASE_URL = 'postgresql+psycopg2://postgres.ckbimfasdfzgiduhonty:SagemCom01%@aws-0-eu-central-1.pooler.supabase.com:6543/postgres'
-        SONAR_TOKEN = credentials('sonar_token')
     }
 
     stages {
@@ -55,7 +54,7 @@ pipeline {
             }
         }
 
-        stage('SonarQube analysis') {
+stage('SonarQube analysis') {
     steps {
         withCredentials([string(credentialsId: 'sonar_token', variable: 'SONAR_TOKEN')]) {
             bat '''
@@ -70,6 +69,7 @@ pipeline {
         }
     }
 }
+
 
 
 
