@@ -33,7 +33,7 @@ pipeline {
                 bat 'powershell -Command "Start-Sleep -Seconds 5"'
             }
         }
-
+/*
         stage('Build Docker image for Flask app') {
             steps {
                 bat 'docker build -t flask_app_image .'
@@ -53,7 +53,7 @@ pipeline {
                 '''
             }
         }
-
+*/
 stage('SonarQube analysis') {
     steps {
         withCredentials([string(credentialsId: 'sonar_token', variable: 'SONAR_TOKEN')]) {
