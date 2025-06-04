@@ -64,15 +64,15 @@ pipeline {
             }
         }
 
-        stage('Analyse SonarQube') {
+
+
+        stage("Vérifier la qualité (SonarQube)") {
             steps {
-                withSonarQubeEnv('MySonar') {
-                    bat 'sonar-scanner'
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
-
-
         stage('Lancer tests Behave Ederson ') {
             steps {
                 bat '.venv\\Scripts\\python.exe -m behave tests/Ederson/features'
