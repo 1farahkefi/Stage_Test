@@ -64,7 +64,13 @@ pipeline {
             }
         }
 
-
+        stage('Analyse SonarQube') {
+            steps {
+                withSonarQubeEnv('MySonar') {
+                    bat 'sonar-scanner'
+                }
+            }
+        }
 
         stage("Vérifier la qualité (SonarQube)") {
             steps {
