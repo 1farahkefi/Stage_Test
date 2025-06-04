@@ -56,9 +56,9 @@ pipeline {
         }
 
         stage('SonarQube analysis') {
-            steps {
+    steps {
         withCredentials([string(credentialsId: 'sonar_token', variable: 'SONAR_TOKEN')]) {
-            bat '''
+            bat """
             set SONAR_TOKEN=%SONAR_TOKEN%
             sonar-scanner ^
                 -Dsonar.projectKey=1farahkefi_Stage_Test ^
@@ -66,12 +66,12 @@ pipeline {
                 -Dsonar.sources=. ^
                 -Dsonar.host.url=https://sonarcloud.io ^
                 -Dsonar.python.version=3.10 ^
-                Dsonar.login=%SONAR_TOKEN%
-
-            '''
-                }
-            }
+                -Dsonar.login=%SONAR_TOKEN%
+            """
         }
+    }
+}
+
 
 
         stage("Vérifier la qualité (SonarQube)") {
