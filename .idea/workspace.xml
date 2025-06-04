@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f95f44ef-d875-422e-9139-fd87a4f8b152" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sonar-projet.properties" beforeDir="false" afterPath="$PROJECT_DIR$/sonar-projet.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
