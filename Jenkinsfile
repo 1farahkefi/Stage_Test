@@ -57,26 +57,20 @@ pipeline {
 
         stage('SonarQube analysis') {
     steps {
-        script {
-            // Récupérer le token Jenkins dans une variable Groovy
-            def token = env.SONAR_TOKEN
-
-            // Afficher le token pour debug (à retirer en prod)
-            bat "echo Sonar token is: ${token}"
-
-            // Exécuter la commande sonar-scanner avec token injecté proprement
-            bat """
-            sonar-scanner ^
-                -Dsonar.projectKey=1farahkefi_Stage_Test ^
-                -Dsonar.organization=1farahkefi ^
-                -Dsonar.sources=. ^
-                -Dsonar.host.url=https://sonarcloud.io ^
-                -Dsonar.python.version=3.10 ^
-                -Dsonar.login=\\"${token}\\"
-            """
+        withCredentials([string(credentialsId: 'sonar_token', variable: 'SONAR_TOKEN')]) {
+            bat '''
+                sonar-scanner ^
+                    -Dsonar.projectKey=1farahkefi_Stage_Test ^
+                    -Dsonar.organization=1farahkefi ^
+                    -Dsonar.sources=. ^
+                    -Dsonar.host.url=https://sonarcloud.io ^
+                    -Dsonar.python.version=3.10 ^
+                    -Dsonar.login=%SONAR_TOKEN%
+            '''
         }
     }
 }
+
 
 
         stage("Vérifier la qualité (SonarQube)") {
