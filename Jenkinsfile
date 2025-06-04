@@ -16,7 +16,7 @@ pipeline {
             }
         }
 
-        stage('Preparation de l environment') {
+        stage('Préparation de l’environnement') {
             steps {
                 bat 'python -m venv .venv'
             }
@@ -28,8 +28,6 @@ pipeline {
             }
         }
 
-
-
         stage('Lancer Flask') {
             steps {
                 bat 'start /MIN "" .venv\\Scripts\\python.exe app.py'
@@ -39,36 +37,36 @@ pipeline {
 
         stage('Build Docker image for Flask app') {
             steps {
-                script {
-                    // Construire l'image Flask app (à partir de ton Dockerfile)
-                    bat 'docker build -t flask_app_image .'
-                }
+                bat 'docker build -t flask_app_image .'
             }
         }
 
         stage('Start Selenium and Flask containers') {
             steps {
-                script {
-                    // Lancer Selenium (ex: selenium/standalone-chrome) et Flask app
-                    bat '''
+                bat '''
                     docker network create test_network || true
 
-                     # Supprimer les conteneurs s'ils existent
-                        docker rm -f selenium || true
-                        docker rm -f flask_app || true
+                    docker rm -f selenium || true
+                    docker rm -f flask_app || true
 
-                     # Lancer les conteneurs
-                        docker run -d --name selenium --network test_network selenium/standalone-chrome
-                        docker run -d --name flask_app --network test_network -p 5000:5000 flask_app_image
-            '''
-                }
+                    docker run -d --name selenium --network test_network selenium/standalone-chrome
+                    docker run -d --name flask_app --network test_network -p 5000:5000 flask_app_image
+                '''
             }
         }
 
-        stage('Analyse SonarQube') {
+        stage('Analyse SonarCloud') {
             steps {
                 withSonarQubeEnv('MySonar') {
-                    bat 'sonar-scanner'
+                    bat '''
+                        sonar-scanner ^
+                            -Dsonar.projectKey=1farahkefi_Stage_Test ^
+                            -Dsonar.organization=1farahkefi ^
+                            -Dsonar.sources=. ^
+                            -Dsonar.host.url=https://sonarcloud.io ^
+                            -Dsonar.python.version=3.10 ^
+                            -Dsonar.token=${env.SONAR_TOKEN}
+                    '''
                 }
             }
         }
@@ -80,24 +78,22 @@ pipeline {
                 }
             }
         }
-        stage('Lancer tests Behave Ederson ') {
+
+        stage('Lancer tests Behave Ederson') {
             steps {
                 bat '.venv\\Scripts\\python.exe -m behave tests/Ederson/features'
-
             }
         }
-        stage('Lancer tests Behave livebox7 ') {
+
+        stage('Lancer tests Behave livebox7') {
             steps {
                 bat '.venv\\Scripts\\python.exe -m behave tests/Livebox7/features'
-
             }
         }
-
 
         stage('Arrêter Flask') {
             steps {
                 bat '''
-                    REM Kill Flask (python.exe) sur le port 5000
                     for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":5000" ^| findstr LISTENING') do taskkill /PID %%a /F
                 '''
             }
