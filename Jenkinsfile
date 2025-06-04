@@ -59,7 +59,7 @@ stage('SonarQube analysis') {
                 // Utilise la config SonarQube installée et le token associé
                 withSonarQubeEnv('MySonar') {
                     // Exécute le scanner depuis l'outil installé automatiquement
-                    sh 'sonar-scanner -Dsonar.projectKey=1farahkefi_Stage_Test -Dsonar.sources=.'
+                    bat 'sonar-scanner -Dsonar.projectKey=1farahkefi_Stage_Test -Dsonar.sources=.'
                 }
             }
         }
