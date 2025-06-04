@@ -27,19 +27,15 @@ pipeline {
             }
         }
 
-        stage('Lancer Flask') {
+        stage('Build Docker image for Flask app') {
             steps {
                 bat 'start /MIN "" .venv\\Scripts\\python.exe app.py'
                 bat 'powershell -Command "Start-Sleep -Seconds 5"'
-            }
-        }
-
-        /*
-        stage('Build Docker image for Flask app') {
-            steps {
                 bat 'docker build -t flask_app_image .'
             }
         }
+
+
 
         stage('Start Selenium and Flask containers') {
             steps {
@@ -54,12 +50,13 @@ pipeline {
                 '''
             }
         }
-        */
+
 
         stage('SonarQube analysis') {
             steps {
                 // SonarCloud Automatic Analysis est activé, donc ne pas lancer manuellement
                 withSonarQubeEnv('MySonar') {
+                     echo 'Analyse Sonar automatique activée '
                     // bat 'sonar-scanner' // <-- Ligne commentée pour éviter conflit avec automatic analysis
                 }
             }
@@ -88,7 +85,15 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline terminé.'
+           '
+            echo 'Pipeline terminé. Nettoyage Docker...'
+            bat '''
+                docker stop flask_app || echo Flask already stopped
+                docker rm flask_app || echo Flask already removed
+
+                docker stop selenium || echo Selenium already stopped
+                docker rm selenium || echo Selenium already removed
+            '''
         }
     }
 }
