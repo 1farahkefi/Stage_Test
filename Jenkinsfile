@@ -85,7 +85,7 @@ pipeline {
 
     post {
         always {
-           '
+
             echo 'Pipeline terminé. Nettoyage Docker...'
             bat '''
                 docker stop flask_app || echo Flask already stopped
