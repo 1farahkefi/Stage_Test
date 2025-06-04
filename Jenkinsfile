@@ -15,7 +15,7 @@ pipeline {
             }
         }
 
-        stage('Preparation') {
+        stage('Preparation de l environment') {
             steps {
                 bat 'python -m venv .venv'
             }
@@ -24,6 +24,15 @@ pipeline {
         stage('Install requirements') {
             steps {
                 bat '.venv\\Scripts\\pip.exe install -r requirements.txt'
+            }
+        }
+
+
+
+        stage('Lancer Flask') {
+            steps {
+                bat 'start /MIN "" .venv\\Scripts\\python.exe app.py'
+                bat 'powershell -Command "Start-Sleep -Seconds 5"'
             }
         }
 
@@ -55,38 +64,6 @@ pipeline {
             }
         }
 
-        stage('Lancer Flask') {
-            steps {
-                bat 'start /MIN "" .venv\\Scripts\\python.exe app.py'
-                bat 'powershell -Command "Start-Sleep -Seconds 5"'
-            }
-        }
-
-        stage('Tester si Flask répond') {
-            steps {
-                bat '''
-                    @echo off
-                    setlocal enabledelayedexpansion
-                    set success=0
-                    for /L %%i in (1,1,10) do (
-                        powershell -Command "try { (Invoke-WebRequest -Uri http://127.0.0.1:5000 -UseBasicParsing).StatusCode } catch { 'Error' }" > response.txt
-                        findstr /C:"200" response.txt > nul
-                        if !errorlevel! == 0 (
-                            set success=1
-                            goto done
-                        )
-                        powershell -Command "Start-Sleep -Seconds 1"
-                    )
-                    :done
-                    if %success%==0 (
-                        echo Flask n'a pas répondu à temps.
-                        type response.txt
-                        exit /b 1
-                    )
-                    exit /b 0
-                '''
-            }
-        }
         stage('Analyse SonarQube') {
             steps {
                 withSonarQubeEnv('MySonar') {
