@@ -7,6 +7,9 @@ pipeline {
         PIP = '.venv\\Scripts\\pip.exe'
         DATABASE_URL = 'postgresql+psycopg2://postgres.ckbimfasdfzgiduhonty:SagemCom01%@aws-0-eu-central-1.pooler.supabase.com:6543/postgres'
     }
+    triggers {
+        pollSCM('H/5 * * * *')  // toutes les 5 minutes
+    }
 
     stages {
         stage('Checkout') {
