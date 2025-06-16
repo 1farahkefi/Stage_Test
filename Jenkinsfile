@@ -71,7 +71,7 @@ pipeline {
                 echo 'Test Beshave Ederson passe avec succee'
             }
         }
-/*
+
         stage('Lancer tests Behave livebox7') {
             steps {
                 bat '.venv\\Scripts\\python.exe -m behave tests/Livebox7/features'
